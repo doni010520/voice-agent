@@ -53,11 +53,3 @@ async def audio_welcome():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-Depois atualiza o `requirements.txt`:
-```
-fastapi==0.109.0
-uvicorn==0.27.0
-python-multipart==0.0.6
-httpx==0.26.0
