@@ -5,7 +5,7 @@ import os
 
 app = FastAPI(title="Voice Agent")
 
-DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 @app.get("/health")
 async def health():
@@ -27,27 +27,32 @@ async def incoming_call(request: Request):
 
 @app.get("/audio/welcome.mp3")
 async def audio_welcome():
-    """Gera áudio com Deepgram TTS"""
+    """Gera áudio com OpenAI TTS"""
     
     text = "Olá! Você ligou para o agente de voz com inteligência artificial. Como posso ajudar você hoje?"
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://api.deepgram.com/v1/speak?model=aura-thalia-pt-br",
+                "https://api.openai.com/v1/audio/speech",
                 headers={
-                    "Authorization": f"Token {DEEPGRAM_API_KEY}",
+                    "Authorization": f"Bearer {OPENAI_API_KEY}",
                     "Content-Type": "application/json"
                 },
-                json={"text": text},
-                timeout=15.0
+                json={
+                    "model": "tts-1",
+                    "input": text,
+                    "voice": "nova",
+                    "response_format": "mp3"
+                },
+                timeout=30.0
             )
             
             if response.status_code == 200:
                 return Response(content=response.content, media_type="audio/mpeg")
     
     except Exception as e:
-        print(f"Erro Deepgram: {e}")
+        print(f"Erro OpenAI TTS: {e}")
     
     return Response(content=b"", media_type="audio/mpeg")
 
