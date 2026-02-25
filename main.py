@@ -7,9 +7,6 @@ app = FastAPI(title="Voice Agent")
 
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
 
-# Cache simples pro áudio
-audio_cache = {}
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
@@ -32,18 +29,12 @@ async def incoming_call(request: Request):
 async def audio_welcome():
     """Gera áudio com Deepgram TTS"""
     
-    global audio_cache
-    
-    # Usa cache se existir
-    if "welcome" in audio_cache:
-        return Response(content=audio_cache["welcome"], media_type="audio/mpeg")
-    
     text = "Olá! Você ligou para o agente de voz com inteligência artificial. Como posso ajudar você hoje?"
     
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "https://api.deepgram.com/v1/speak?model=aura-asteria-en",
+                "https://api.deepgram.com/v1/speak?model=aura-thalia-pt-br",
                 headers={
                     "Authorization": f"Token {DEEPGRAM_API_KEY}",
                     "Content-Type": "application/json"
@@ -53,13 +44,11 @@ async def audio_welcome():
             )
             
             if response.status_code == 200:
-                audio_cache["welcome"] = response.content
                 return Response(content=response.content, media_type="audio/mpeg")
     
     except Exception as e:
         print(f"Erro Deepgram: {e}")
     
-    # Retorna áudio vazio se falhar
     return Response(content=b"", media_type="audio/mpeg")
 
 if __name__ == "__main__":
